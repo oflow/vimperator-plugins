@@ -176,7 +176,9 @@ const REPLACE_TABLE = {
             str = str.replace(regex, han[i]);
         }
         // 全角→半角置換付け足す
-        title = str.replace(/｜/g, ' | ').replace(/／/g, ' / ').replace(/[ ]+/g, ' ');
+        title = str.replace(/｜/g, ' | ').replace(/／/g, ' / ')
+                   .replace(/（/g, '(').replace(/）/g, ')')
+                   .replace(/[ ]+/g, ' ');
         return title;
     },
     get URL () buffer.URL,
