@@ -175,7 +175,8 @@ const REPLACE_TABLE = {
             var regex = new RegExp(zen[i], 'gm');
             str = str.replace(regex, han[i]);
         }
-        title = str;
+        // 全角→半角置換付け足す
+        title = str.replace(/｜/g, ' | ').replace(/／/g, ' / ').replace(/[ ]+/g, ' ');
         return title;
     },
     get URL () buffer.URL,
