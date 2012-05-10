@@ -161,24 +161,26 @@ const REPLACE_TABLE = {
         if (selection.rangeCount < 1)
             return title;
 
-        for (var i=0, c=selection.rangeCount; i<c; i++){
+        for (var i = 0, c = selection.rangeCount; i < c; i++){
             sel += selection.getRangeAt(i).toString();
         }
         if (sel) {
             title = sel;
         }
         // 全角→半角置換
-        var han= '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@-.,:\'\' ';
-        var zen= '１２３４５６７８９０ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＠－．，：‘’　';
+        var han= '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%-().,:;\'\' ';
+        var zen= '１２３４５６７８９０ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＠＃＄％－（）．，：；‘’　';
         var str = title;
-        for(var i=0; i < zen.length; i++) {
-            var regex = new RegExp(zen[i], 'gm');
-            str = str.replace(regex, han[i]);
+        for(var i = 0, length = zen.length; i < length; i++) {
+            var regex = new RegExp(zen.charAt[i], 'gm');
+            str = str.replace(regex, han.charAt[i]);
         }
         // 全角→半角置換付け足す
+        // スペース、改行も置換
         title = str.replace(/｜/g, ' | ').replace(/／/g, ' / ')
-                   .replace(/（/g, '(').replace(/）/g, ')')
-                   .replace(/[ ]+/g, ' ');
+                   .replace(/[ \t]+/g, ' ')
+                   .replace(/[\r\n]/g, '');
+
         return title;
     },
     get URL () buffer.URL,
@@ -189,9 +191,23 @@ const REPLACE_TABLE = {
         if (selection.rangeCount < 1)
             return '';
 
-        for (var i=0, c=selection.rangeCount; i<c; i++){
+        for (var i = 0, c = selection.rangeCount; i<c; i++){
             sel += selection.getRangeAt(i).toString();
         }
+        // 全角→半角置換
+        var han= '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%-().,:;\'\' ';
+        var zen= '１２３４５６７８９０ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＠＃＄％－（）．，：；‘’　';
+        var str = sel;
+        for(var i = 0, length = han.length; i < length; i++) {
+            var regex = new RegExp(zen.charAt(i), 'gm');
+            str = str.replace(regex, han.charAt(i));
+        }
+        // 全角→半角置換付け足す
+        // スペース、改行も置換
+        sel = str.replace(/｜/g, ' | ').replace(/／/g, ' / ')
+                 .replace(/[ \t]+/g, ' ')
+                 .replace(/[\r\n]/g, '');
+
         return sel;
     },
     get HTMLSEL () {
@@ -202,7 +218,7 @@ const REPLACE_TABLE = {
             return '';
 
         var serializer = new XMLSerializer();
-        for (var i=0, c=selection.rangeCount; i<c; i++){
+        for (var i = 0, c = selection.rangeCount; i<c; i++){
             htmlsel += serializer.serializeToString(selection.getRangeAt(i).cloneContents());
         }
         return htmlsel.replace(/<(\/)?(\w+)([\s\S]*?)>/g, function(all, close, tag, attr){
