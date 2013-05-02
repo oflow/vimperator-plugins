@@ -1,5 +1,5 @@
 var INFO =
-<plugin name="copy" version="0.7.6"
+xml`<plugin name="copy" version="0.7.6"
         href="http://github.com/vimpr/vimperator-plugins/blob/master/copy.js"
         summary="copy strings from the template (like CopyURL+)"
         xmlns="http://vimperator.org/namespaces/liberator">
@@ -113,19 +113,7 @@ EOM
             <p>wedata から読込まない label のリストを定義します。</p>
         </description>
     </item>
-</plugin>;
-var PLUGIN_INFO =
-<VimperatorPlugin>
-<name>{NAME}</name>
-<description>enable to copy strings from a template (like CopyURL+)</description>
-<description lang="ja">テンプレートから文字列のコピーを可能にします（CopyURL+みたいなもの）</description>
-<minVersion>2.0pre</minVersion>
-<maxVersion>2.0pre</maxVersion>
-<updateURL>https://github.com/vimpr/vimperator-plugins/raw/master/copy.js</updateURL>
-<author mail="teramako@gmail.com" homepage="http://vimperator.g.hatena.ne.jp/teramako/">teramako</author>
-<license>MPL 1.1/GPL 2.0/LGPL 2.1</license>
-<version>0.7.5</version>
-</VimperatorPlugin>;
+</plugin>`;
 
 liberator.plugins.exCopy = (function(){
 var excludeLabelsMap = {};
@@ -153,7 +141,6 @@ copy_templates.forEach(function(template){
 
 const REPLACE_TABLE = {
     get TITLE () {
-        // 選択文字列があればタイトルよりそちらを優先
         var sel = '';
         var title = buffer.title;
         var win = new XPCNativeWrapper(window.content.window);
@@ -167,20 +154,9 @@ const REPLACE_TABLE = {
         if (sel) {
             title = sel;
         }
-        // 全角→半角置換
-        var han= '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%-().,:;\'\' ';
-        var zen= '１２３４５６７８９０ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＠＃＄％－（）．，：；‘’　';
-        var str = title;
-        for(var i = 0, length = zen.length; i < length; i++) {
-            var regex = new RegExp(zen.charAt[i], 'gm');
-            str = str.replace(regex, han.charAt[i]);
-        }
-        // 全角→半角置換付け足す
-        // スペース、改行も置換
-        title = str.replace(/｜/g, ' | ').replace(/／/g, ' / ')
-                   .replace(/[ \t]+/g, ' ')
-                   .replace(/[\r\n]/g, '');
-
+        // 改行置換
+        title = title.replace(/[\r\n]/g, '');
+        title = replaceZenHan(title);
         return title;
     },
     get URL () buffer.URL,
@@ -191,24 +167,10 @@ const REPLACE_TABLE = {
         if (selection.rangeCount < 1)
             return '';
 
-        for (var i = 0, c = selection.rangeCount; i<c; i++){
+        for (var i=0, c=selection.rangeCount; i<c; i++){
             sel += selection.getRangeAt(i).toString();
         }
-        // 全角→半角置換
-        var han= '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%-().,:;\'\' ';
-        var zen= '１２３４５６７８９０ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＠＃＄％－（）．，：；‘’　';
-        var str = sel;
-        for(var i = 0, length = han.length; i < length; i++) {
-            var regex = new RegExp(zen.charAt(i), 'gm');
-            str = str.replace(regex, han.charAt(i));
-        }
-        // 全角→半角置換付け足す
-        // スペース、改行も置換
-        sel = str.replace(/｜/g, ' | ').replace(/／/g, ' / ')
-                 .replace(/[ \t]+/g, ' ')
-                 .replace(/[\r\n]/g, '');
-
-        return sel;
+        return replaceZenHan(sel);
     },
     get HTMLSEL () {
         var htmlsel = '';
@@ -218,7 +180,7 @@ const REPLACE_TABLE = {
             return '';
 
         var serializer = new XMLSerializer();
-        for (var i = 0, c = selection.rangeCount; i<c; i++){
+        for (var i=0, c=selection.rangeCount; i<c; i++){
             htmlsel += serializer.serializeToString(selection.getRangeAt(i).cloneContents());
         }
         return htmlsel.replace(/<(\/)?(\w+)([\s\S]*?)>/g, function(all, close, tag, attr){
@@ -261,6 +223,20 @@ commands.addUserCommand(['copy'],'Copy to clipboard',
     },
     true
 );
+
+function replaceZenHan(str) {
+    // 全角→半角置換
+    var han= '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%-().,:;\'\' ';
+    var zen= '１２３４５６７８９０ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＠＃＄％－（）．，：；‘’　';
+    for(var i = 0, length = han.length; i < length; i++) {
+        var regex = new RegExp(zen.charAt(i), 'gm');
+        str = str.replace(regex, han.charAt(i));
+    }
+    str = str.replace(/｜/g, ' | ').replace(/／/g, ' / ')
+             .replace(/[ \t]+/g, ' ');
+
+    return str;
+}
 
 function addUserMap(label, map){
     mappings.addUserMap([modes.NORMAL,modes.VISUAL], map,
